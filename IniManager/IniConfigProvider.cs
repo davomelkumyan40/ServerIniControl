@@ -16,7 +16,7 @@ namespace IniManager
 
         public Dictionary<string, string> Data { get; private set; }
 
-        private ushort OnLoad(string raw, string section, Dictionary<string, string> tempData)
+        private ushort OnLoad(string raw, ref string section, Dictionary<string, string> tempData)
         {
             string normalizedLine = raw.Trim();
             if (string.IsNullOrWhiteSpace(normalizedLine))
@@ -63,7 +63,7 @@ namespace IniManager
                     while (reader?.Peek() != -1)
                     {
                         string raw = reader.ReadLine();
-                        ushort res = OnLoad(raw, section, tempData);
+                        ushort res = OnLoad(raw, ref section, tempData);
                         if (res != 0)
                             return res;
                     }
@@ -167,7 +167,7 @@ namespace IniManager
                     while (reader?.Peek() != -1)
                     {
                         string raw = await reader.ReadLineAsync();
-                        ushort res = OnLoad(raw, section, tempData);
+                        ushort res = OnLoad(raw, ref section, tempData);
                         if (res != 0)
                             return res;
                     }
