@@ -34,8 +34,8 @@ namespace Client
         public async Task ConnectionCheckAsync()
         {
             RequestMessage = "connectioncheck"; // TODO CONST
-            await SendMessageAsync();
-            await ReciveMessageAsync();
+            var result = await SendMessageAsync();
+            await ReciveMessageAsync(); // TODO when server stops listening but still running notify client that server is not available for listening
             if (ResponseMessage == "valid") //TODO CONST
                 Connected = true;
             else

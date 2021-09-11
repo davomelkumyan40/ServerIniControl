@@ -11,17 +11,17 @@ namespace Client
         public static void SentMessage(Client client)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"\nSent: => ");
+            Console.Write($"\tSent: => ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"'{client.RequestMessage}'\n");
+            Console.Write($"\t'{client.RequestMessage}'\n");
         }
 
         public static void RecivedMessage(Client client)
         {
             Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.Write($"\nRecived: <= ");
+            Console.Write($"\tRecived: <= ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"'{client.ResponseMessage}'\n");
+            Console.Write($"\t'{client.ResponseMessage}'\n");
         }
 
         public static void HelpMessage()
@@ -55,9 +55,15 @@ namespace Client
             Console.WriteLine($"{info}");
         }
 
-        public static void ServerIsUnableMessage(Client client)
+        public static void ServerIsNotAvailableMessage(Client client)
         {
-            WarningMessage(client, "Server is unable...");
+            WarningMessage(client, "Server is not available");
+            Console.Write($"{new string(' ', 10)}");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.Write("Connecting....");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.BackgroundColor = ConsoleColor.Black;
         }
 
         public static void WarningMessage(Client client, string message = null)

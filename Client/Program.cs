@@ -9,10 +9,7 @@ namespace Client
 {
     class Program
     {
-        static string[] commands = new string[]
-{
-            "--get", "--set", "--help", "--reset", "--exit"
-};
+        static string[] commands = new string[] { "--get", "--set", "--help", "--reset", "--exit" };
 
         static async Task Main(string[] args)
         {
@@ -40,16 +37,14 @@ namespace Client
                             await Task.Delay(client.Configuration.ConnectionTimeOut);
                             await client.ConnectAsync();
                             if (client.Connected)
-                            {
                                 UI.SuccessMessage(client);
-                            }
                             else
                                 UI.FailedMessage(client);
                         }
                         catch (Exception ex)
                         {
                             if (ex is SocketException)
-                                UI.ServerIsUnableMessage(client);
+                                UI.ServerIsNotAvailableMessage(client);
                             else
                                 UI.FailedMessage(client, ex.Message);
                         }
@@ -68,7 +63,7 @@ namespace Client
                     catch (Exception ex)
                     {
                         if (ex is SocketException)
-                            UI.ServerIsUnableMessage(client);
+                            UI.ServerIsNotAvailableMessage(client);
                         else
                             UI.FailedMessage(client, ex.Message);
                         if (!client.Connected)

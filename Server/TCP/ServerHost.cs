@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using IniManager;
 using System.Linq;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Server.TCP
 {
@@ -25,6 +24,7 @@ namespace Server.TCP
         public ServerConfig Configuration { get; private set; }
         public bool Listening { get; private set; }
         public List<TcpClient> Clients { get; private set; }
+        public bool IsRunning { get; private set; }
 
         public ServerHost(IConfigurationBuilder builder)
         {
@@ -50,17 +50,17 @@ namespace Server.TCP
             IPEndPoint endPoint = new IPEndPoint(localAddress, Configuration.Port);
             listener = new TcpListener(endPoint);
             listener.Start();
-            Listening = true;
+            IsRunning = true;
         }
 
 
         public void Listen()
         {
+            Listening = true;
             ThreadPool.QueueUserWorkItem(async (state) =>
             {
                 try
                 {
-
                     while (Listening)
                     {
                         TcpClient client = await listener.AcceptTcpClientAsync();
@@ -70,6 +70,7 @@ namespace Server.TCP
                 }
                 catch
                 {
+                    StopListening();
                     Stop();
                 }
             });
@@ -81,8 +82,14 @@ namespace Server.TCP
             Listening = false;
         }
 
+        public void StartListening()
+        {
+            Listening = true;
+        }
+
         public void Stop()
         {
+            IsRunning = false;
             Clients?.ForEach(c => c.Close());
             listener?.Stop();
         }

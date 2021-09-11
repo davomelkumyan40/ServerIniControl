@@ -7,14 +7,13 @@ using Server.TCP;
 
 namespace Server
 {
-    internal class UI
+    public class UI
     {
-        internal static void ListeningMessage(ServerHost host, string message = null)
+        public static void ListeningMessage(ServerHost host)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Listening: ");
+            Console.WriteLine($"Listening:  {host.Configuration.IpAddress}:{host.Configuration.Port}");
             Console.ForegroundColor = ConsoleColor.White;
-            OnMessage(host, message);
         }
 
         private static void OnMessage(ServerHost host, string message = null)
@@ -33,7 +32,7 @@ namespace Server
             Console.ForegroundColor = ConsoleColor.White;
         }
 
-        internal static void FailedListening(ServerHost host, string message = null)
+        public static void FailedListening(ServerHost host, string message = null)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Failed: ");
@@ -41,7 +40,7 @@ namespace Server
             OnMessage(host, message);
         }
 
-        internal static void HelpMessage(ServerHost host)
+        public static void HelpMessage(ServerHost host)
         {
             Console.ForegroundColor = ConsoleColor.Black;
             Console.BackgroundColor = ConsoleColor.White;
@@ -55,19 +54,14 @@ namespace Server
             Console.WriteLine($"\nCurrent Directory: [{AppDomain.CurrentDomain.BaseDirectory}]");
         }
 
-        public static void InitUi()
+        public static void StartedMessage(ServerHost host)
         {
-            Console.Title = "Server";
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine(@$"
-{new string(' ', Console.BufferWidth / 2 - 35)}   _|_|_|  _|_|_|_|  _|_|_|    _|      _|  _|_|_|_|  _|_|_|    
-{new string(' ', Console.BufferWidth / 2 - 35)} _|        _|        _|    _|  _|      _|  _|        _|    _|  
-{new string(' ', Console.BufferWidth / 2 - 35)}   _|_|    _|_|_|    _|_|_|    _|      _|  _|_|_|    _|_|_|    
-{new string(' ', Console.BufferWidth / 2 - 35)}       _|  _|        _|    _|    _|  _|    _|        _|    _|  
-{new string(' ', Console.BufferWidth / 2 - 35)} _|_|_|    _|_|_|_|  _|    _|      _|      _|_|_|_|  _|    _|  
-");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Starting Host: ");
             Console.ForegroundColor = ConsoleColor.White;
+            OnMessage(host);
         }
+
 
         public static void DisplayData(Dictionary<string, string> data)
         {
@@ -90,7 +84,7 @@ namespace Server
             Console.ForegroundColor = ConsoleColor.White;
         }
 
-        internal static void UnknownCommand(string command)
+        public static void UnknownCommand(string command)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"\tUnknown: {command}");
@@ -99,7 +93,7 @@ namespace Server
 
         public static void ServerStopedMessage(ServerHost host)
         {
-            if (host.Listening)
+            if (!host.IsRunning)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Stoped: ");
@@ -112,6 +106,36 @@ namespace Server
                 Console.WriteLine($"No Instance on {host.Configuration.IpAddress}:{host.Configuration.Port}");
                 Console.ForegroundColor = ConsoleColor.White;
             }
+        }
+
+
+        public static void ListenerStopedMessage(ServerHost host)
+        {
+            if (!host.Listening)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Stoped Listening: [{host.Configuration.IpAddress}:{host.Configuration.Port}]");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine($"No Instance on {host.Configuration.IpAddress}:{host.Configuration.Port}");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+        }
+
+        public static void InitUi()
+        {
+            Console.Title = "Server";
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(@$"
+{new string(' ', Console.BufferWidth / 2 - 35)}   _|_|_|  _|_|_|_|  _|_|_|    _|      _|  _|_|_|_|  _|_|_|    
+{new string(' ', Console.BufferWidth / 2 - 35)} _|        _|        _|    _|  _|      _|  _|        _|    _|  
+{new string(' ', Console.BufferWidth / 2 - 35)}   _|_|    _|_|_|    _|_|_|    _|      _|  _|_|_|    _|_|_|    
+{new string(' ', Console.BufferWidth / 2 - 35)}       _|  _|        _|    _|    _|  _|    _|        _|    _|  
+{new string(' ', Console.BufferWidth / 2 - 35)} _|_|_|    _|_|_|_|  _|    _|      _|      _|_|_|_|  _|    _|  ");
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
 }

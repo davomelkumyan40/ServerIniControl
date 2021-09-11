@@ -10,7 +10,6 @@ namespace Server
 {
     class Program
     {
-        private static IniConfigProvider iniProvider;
         private static ServerCommands currentCommand = ServerCommands.None;
 
         static async Task Main(string[] args)
@@ -22,37 +21,52 @@ namespace Server
                 .AddJsonFile("appsettings.json");
 
 
-            iniProvider = new IniConfigProvider();
             ServerHost host = new ServerHost(builder);
             host.ClientConnected += (sender, e) => Console.WriteLine($"\nConnected: [{e.ClientId}]");
             host.ClientDisconnected += (sender, e) => Console.WriteLine($"\nDisconnect: [{e.ClientId}]");
             AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
             {
+                host.StopListening();
                 host.Stop();
             };
 
-            if (PortIsNotFree(host.Configuration.Port))
+            while(PortIsNotFree(host.Configuration.Port))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Server Error: ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine($"\tCheck 'appsettings.json' section [Port] = {host.Configuration.Port} is used by another host");
+
+                Console.WriteLine("Press any key to retry connection");
+                Console.ReadKey();
             }
 
-                while (currentCommand != ServerCommands.Exit)
+            while (currentCommand != ServerCommands.Exit)
             {
                 Console.Write("host: $ ");
                 var commands = Console.ReadLine().Split(" ");
                 SetInstruction(commands[0]);
                 var arguments = commands.Skip(1).ToArray();
+                uint res = 0;
                 switch (currentCommand)
                 {
                     case ServerCommands.Start:
                         try
                         {
-                            host.Start();
-                            UI.ListeningMessage(host);
-                            host.Listen();
+                            if (host.IsRunning && !host.Listening)
+                            {
+                                host.StartListening();
+                                UI.ListeningMessage(host);
+                            }
+                            else if(!host.IsRunning)
+                            {
+                                host.Start();
+                                UI.StartedMessage(host);
+                                host.Listen();
+                                UI.ListeningMessage(host);
+                            }
+                            else
+                                Console.WriteLine("Host is already running..."); // TODO UI
                         }
                         catch (Exception ex)
                         {
@@ -63,16 +77,16 @@ namespace Server
                         UI.HelpMessage(host);
                         break;
                     case ServerCommands.Set:
-                        var res1 = await host.IniProvider.SetValueAsync(arguments[0], arguments[1]); //TODO check string is null or empty
-                        if (res1 == 0)
+                        res = await host.IniProvider.SetValueAsync(arguments[0], arguments[1]); //TODO check string is null or empty
+                        if (res == 0)
                             Console.WriteLine($">>: {arguments[0]} = {arguments[1]}");
                         else
                             Console.WriteLine($"Something gone wrong: check [{string.Join(" ", arguments)}]");
                         break;
                     case ServerCommands.Get:
                         var value = string.Empty;
-                        var res2 = host.IniProvider.TryGetValue(arguments[0], ref value); //TODO check string is null or empty
-                        if (res2 == 0)
+                        res = host.IniProvider.TryGetValue(arguments[0], ref value); //TODO check string is null or empty
+                        if (res == 0)
                             Console.WriteLine($">>: {value}");
                         else
                             Console.WriteLine($"Something gone wrong: check [{string.Join(" ", arguments)}]");
@@ -83,8 +97,9 @@ namespace Server
                             host.Stop();
                             UI.ServerStopedMessage(host);
                             host.Start();
-                            UI.ListeningMessage(host);
+                            UI.StartedMessage(host);
                             host.Listen();
+                            UI.ListeningMessage(host);
                         }
                         catch (Exception ex)
                         {
@@ -97,16 +112,19 @@ namespace Server
                         break;
                     case ServerCommands.Stop:
                         host.StopListening();
-                        UI.ServerStopedMessage(host);
+                        UI.ListenerStopedMessage(host);
+                        break;
+                    case ServerCommands.Exit:
                         break;
                     default:
                         UI.UnknownCommand(string.Join(" ", commands));
                         break;
                 }
                 if (currentCommand == ServerCommands.Exit)
-                    host.Stop();
+                    break;
             }
             host.Stop();
+            UI.ServerStopedMessage(host);
         }
 
         private static bool PortIsNotFree(int port)
